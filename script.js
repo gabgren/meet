@@ -37,18 +37,16 @@ function updateVideoLayout() {
     }
 }
 
-// Function to show controls
+// Control visibility functions
 function showControls() {
     controls.classList.add('show');
 }
 
-// Function to hide controls
 function hideControls() {
     controls.classList.remove('show');
     mobileControlToggle.classList.remove('active');
 }
 
-// Function to toggle controls (for mobile)
 function toggleControls() {
     if (controls.classList.contains('show')) {
         hideControls();
@@ -68,73 +66,80 @@ controls.addEventListener('mouseleave', hideControls);
 mobileControlToggle.addEventListener('click', toggleControls);
 
 // Touch event handlers for mobile (to prevent conflicts with video controls)
-mobileControlToggle.addEventListener('touchstart', function(e) {
+function preventTouchDefault(e) {
     e.preventDefault();
     e.stopPropagation();
-});
+}
 
+mobileControlToggle.addEventListener('touchstart', preventTouchDefault);
 mobileControlToggle.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+    preventTouchDefault(e);
     toggleControls();
 });
 
 // Bandwidth slider tooltip functionality
 function updateBandwidthTooltip() {
     var value = parseInt(bandwidthSlider.value);
-    var bandwidthValues = ['100 kbps', '500 kbps', '1 Mbps', '5 Mbps', '15 Mbps', '40 Mbps'];
-    bandwidthTooltip.textContent = bandwidthValues[value];
+    var setting = videoSettings[value];
+    bandwidthTooltip.textContent = `${setting.name} (${setting.videoBitrate/1000}k)`;
     bandwidthTooltip.classList.add('show');
 }
 
-// Hide tooltip when not interacting with slider
-bandwidthSlider.addEventListener('mouseleave', function() {
-    bandwidthTooltip.classList.remove('show');
-});
+// Slider tooltip event handlers
+bandwidthSlider.addEventListener('mouseleave', () => bandwidthTooltip.classList.remove('show'));
+bandwidthSlider.addEventListener('mouseenter', () => bandwidthTooltip.classList.add('show'));
 
-bandwidthSlider.addEventListener('mouseenter', function() {
-    bandwidthTooltip.classList.add('show');
-});
-
-// Video settings based on bandwidth levels
+// Video settings with bitrate information for clarity
 var videoSettings = [
-    // Low (100 kbps)
     {
+        name: 'Low',
+        videoBitrate: 100000,    // 100 kbps
+        audioBitrate: 16000,     // 16 kbps
         width: { ideal: 320, max: 480 },
         height: { ideal: 240, max: 360 },
         frameRate: { ideal: 15, max: 20 },
         facingMode: "user"
     },
-    // Medium (500 kbps)
     {
+        name: 'Medium',
+        videoBitrate: 500000,    // 500 kbps
+        audioBitrate: 32000,     // 32 kbps
         width: { ideal: 640, max: 640 },
         height: { ideal: 480, max: 480 },
         frameRate: { ideal: 20, max: 25 },
         facingMode: "user"
     },
-    // High (1 Mbps)
     {
+        name: 'High',
+        videoBitrate: 1000000,   // 1 Mbps
+        audioBitrate: 64000,     // 64 kbps
         width: { ideal: 640, max: 1280 },
         height: { ideal: 480, max: 720 },
         frameRate: { ideal: 25, max: 30 },
         facingMode: "user"
     },
-    // Ultra (5 Mbps)
     {
+        name: 'Ultra',
+        videoBitrate: 5000000,   // 5 Mbps
+        audioBitrate: 192000,    // 192 kbps
         width: { ideal: 1280, max: 1280 },
         height: { ideal: 720, max: 720 },
         frameRate: { ideal: 30, max: 30 },
         facingMode: "user"
     },
-    // Premium (15 Mbps)
     {
+        name: 'Premium',
+        videoBitrate: 15000000,  // 15 Mbps
+        audioBitrate: 256000,    // 256 kbps
         width: { ideal: 1920, max: 1920 },
         height: { ideal: 1080, max: 1080 },
         frameRate: { ideal: 60, max: 60 },
         facingMode: "user"
     },
-    // Crazy (40 Mbps)
     {
+        name: 'Crazy',
+        videoBitrate: 40000000,  // 40 Mbps
+        audioBitrate: 320000,    // 320 kbps
         width: { ideal: 1920, max: 1920 },
         height: { ideal: 1080, max: 1080 },
         frameRate: { ideal: 60, max: 60 },
@@ -145,20 +150,26 @@ var videoSettings = [
 // Function to get current video settings based on slider
 function getCurrentVideoSettings() {
     var sliderValue = parseInt(bandwidthSlider.value);
-    return videoSettings[sliderValue];
+    var setting = videoSettings[sliderValue];
+    return {
+        width: setting.width,
+        height: setting.height,
+        frameRate: setting.frameRate,
+        facingMode: setting.facingMode
+    };
 }
 
 // Function to restart video with new settings
 function restartVideoWithNewSettings() {
-    var videoSettings = getCurrentVideoSettings();
     var sliderValue = parseInt(bandwidthSlider.value);
-    var bandwidthNames = ['Low (100k)', 'Medium (500k)', 'High (1M)', 'Ultra (5M)', 'Premium (15M)', 'Crazy (40M)'];
+    var setting = videoSettings[sliderValue];
+    var videoConfig = getCurrentVideoSettings();
     
-    console.log(`Changing video settings to ${bandwidthNames[sliderValue]}:`, videoSettings);
+    console.log(`Changing video settings to ${setting.name} (${setting.videoBitrate/1000}k):`, videoConfig);
     
     navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: videoSettings
+        video: videoConfig
     }).then(function (newStream) {
         // If we have a peer connection, replace tracks instead of removing/adding
         if (pc && pc.getSenders) {
@@ -170,11 +181,9 @@ function restartVideoWithNewSettings() {
                 const sender = senders.find(s => s.track && s.track.kind === newTrack.kind);
                 if (sender) {
                     // Replace the existing track
-                    sender.replaceTrack(newTrack).then(() => {
-                        console.log(`Successfully replaced ${newTrack.kind} track`);
-                    }).catch(e => {
-                        console.log(`Error replacing ${newTrack.kind} track:`, e);
-                    });
+                    sender.replaceTrack(newTrack)
+                        .then(() => console.log(`Successfully replaced ${newTrack.kind} track`))
+                        .catch(e => console.log(`Error replacing ${newTrack.kind} track:`, e));
                 } else {
                     // If no existing sender for this track type, add it
                     pc.addTrack(newTrack, newStream);
@@ -193,9 +202,7 @@ function restartVideoWithNewSettings() {
         
         // Ensure remote video is still playing (safety check)
         if (remoteVideo.srcObject && remoteVideo.paused) {
-            remoteVideo.play().catch(e => {
-                console.log('Error resuming remote video:', e);
-            });
+            remoteVideo.play().catch(e => console.log('Error resuming remote video:', e));
         }
         
         console.log("Video successfully restarted with new settings");
@@ -417,11 +424,9 @@ function icecandidate(localStream) {
         console.log("Remote video readyState:", remoteVideo.readyState);
         
         // Force video to play
-        remoteVideo.play().then(() => {
-            console.log("Remote video started playing");
-        }).catch(e => {
-            console.log("Error playing remote video:", e);
-        });
+        remoteVideo.play()
+            .then(() => console.log("Remote video started playing"))
+            .catch(e => console.log("Error playing remote video:", e));
         
         isConnected = true;
         connectionStatusElement.textContent = "Connected!";
@@ -477,40 +482,14 @@ function applyBandwidthLimits() {
     if (!pc || !pc.getSenders) return;
     
     const sliderValue = parseInt(bandwidthSlider.value);
+    const setting = videoSettings[sliderValue];
     
-    let videoBitrate, audioBitrate;
-    
-    switch(sliderValue) {
-        case 0: // Low
-            videoBitrate = 100000;    // 100 kbps
-            audioBitrate = 16000;     // 16 kbps
-            break;
-        case 1: // Medium
-            videoBitrate = 500000;    // 500 kbps
-            audioBitrate = 32000;     // 32 kbps
-            break;
-        case 2: // High
-            videoBitrate = 1000000;   // 1 Mbps
-            audioBitrate = 64000;     // 64 kbps
-            break;
-        case 3: // Ultra
-            videoBitrate = 5000000;   // 5 Mbps
-            audioBitrate = 192000;    // 192 kbps
-            break;
-        case 4: // Premium
-            videoBitrate = 15000000;  // 15 Mbps
-            audioBitrate = 256000;    // 256 kbps
-            break;
-        case 5: // Crazy
-            videoBitrate = 40000000;  // 40 Mbps
-            audioBitrate = 320000;    // 320 kbps
-            break;
-        default:
-            console.log('Invalid bandwidth slider value:', sliderValue);
-            return;
+    if (!setting) {
+        console.log('Invalid bandwidth slider value:', sliderValue);
+        return;
     }
     
-    console.log(`Applying bandwidth limits: Video=${videoBitrate/1000}kbps, Audio=${audioBitrate/1000}kbps`);
+    console.log(`Applying bandwidth limits: Video=${setting.videoBitrate/1000}kbps, Audio=${setting.audioBitrate/1000}kbps`);
     
     // Apply bandwidth limits to all senders
     const senders = pc.getSenders();
@@ -519,11 +498,11 @@ function applyBandwidthLimits() {
             sender.getParameters().then(params => {
                 if (params.encodings && params.encodings.length > 0) {
                     if (sender.track.kind === 'video') {
-                        params.encodings[0].maxBitrate = videoBitrate;
-                        console.log('Applied video bitrate limit:', videoBitrate);
+                        params.encodings[0].maxBitrate = setting.videoBitrate;
+                        console.log('Applied video bitrate limit:', setting.videoBitrate);
                     } else if (sender.track.kind === 'audio') {
-                        params.encodings[0].maxBitrate = audioBitrate;
-                        console.log('Applied audio bitrate limit:', audioBitrate);
+                        params.encodings[0].maxBitrate = setting.audioBitrate;
+                        console.log('Applied audio bitrate limit:', setting.audioBitrate);
                     }
                     return sender.setParameters(params);
                 }
