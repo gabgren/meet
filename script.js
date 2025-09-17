@@ -495,8 +495,9 @@ function applyBandwidthLimits() {
     const senders = pc.getSenders();
     senders.forEach(sender => {
         if (sender.track && sender.getParameters) {
-            sender.getParameters().then(params => {
-                if (params.encodings && params.encodings.length > 0) {
+            try {
+                const params = sender.getParameters();
+                if (params && params.encodings && params.encodings.length > 0) {
                     if (sender.track.kind === 'video') {
                         params.encodings[0].maxBitrate = setting.videoBitrate;
                         console.log('Applied video bitrate limit:', setting.videoBitrate);
@@ -504,11 +505,13 @@ function applyBandwidthLimits() {
                         params.encodings[0].maxBitrate = setting.audioBitrate;
                         console.log('Applied audio bitrate limit:', setting.audioBitrate);
                     }
-                    return sender.setParameters(params);
+                    sender.setParameters(params).catch(e => {
+                        console.log('Error setting parameters:', e);
+                    });
                 }
-            }).catch(e => {
-                console.log('Error getting/setting parameters:', e);
-            });
+            } catch (e) {
+                console.log('Error getting parameters:', e);
+            }
         }
     });
 }
