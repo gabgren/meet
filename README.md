@@ -1,3 +1,9 @@
+Based on https://github.com/nielsbaloe/webrtc-php
+
+his readme:
+
+
+
 # webrtc-php
 
 WebRTC is nice, but impossible to test out if you just have a normal cheap shared-hosting PHP server (which means no websockets), and no time/money/energy to hire a webserver with commandline access to use node.js or Java or a PHP websocket framework. So, here is an example of webRtc with just using plain old cheaply-available PHP. 

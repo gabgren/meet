@@ -8,6 +8,9 @@ RewriteRule ^ - [L]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
+# Route /new to new.php for room creation
+RewriteRule ^new/?$ new.php [L]
+
 # Route room URLs to index.php with room parameter
 RewriteRule ^([a-zA-Z0-9_-]+)/?$ index.php?room=$1 [L,QSA]
 
