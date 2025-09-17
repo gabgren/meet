@@ -1,0 +1,244 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    overflow: hidden;
+}
+
+.video-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#localVideo {
+    position: absolute;
+    border: 1px solid black;
+    transition: all 0.3s ease;
+}
+
+#remoteVideo {
+    position: absolute;
+    border: 1px solid black;
+    background: #000;
+    transition: all 0.3s ease;
+}
+
+/* Before connection: Local video fullscreen, remote hidden */
+.pre-connection #localVideo {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+.pre-connection #remoteVideo {
+    display: none;
+}
+
+/* After connection: Remote fullscreen, local picture-in-picture */
+.connected #remoteVideo {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+.connected #localVideo {
+    bottom: 20px;
+    right: 20px;
+    width: 20vw;
+    height: 12vw;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 1;
+}
+
+.controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: rgba(0,0,0,0.7);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+    font-family: Arial, sans-serif;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.controls.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.mouse-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 150px;
+    z-index: 999;
+    background: transparent;
+}
+
+.controls h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.controls p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.controls select, .controls button {
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.controls button {
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    background: #0056b3;
+}
+
+.bandwidth-slider-container {
+    position: relative;
+    margin: 10px 0;
+}
+
+.bandwidth-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.bandwidth-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+}
+
+.bandwidth-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+    border: none;
+}
+
+.bandwidth-tooltip {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+.bandwidth-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.bandwidth-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #ccc;
+    margin-top: 5px;
+}
+
+/* Mobile control toggle dot */
+.mobile-control-toggle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
+    display: none; /* Hidden by default, shown on mobile */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+    transition: background 0.3s ease;
+}
+
+.mobile-control-toggle:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.toggle-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.mobile-control-toggle.active .toggle-dot {
+    background: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+}
+
+/* Show mobile toggle on mobile devices */
+@media (max-width: 768px) {
+    .mobile-control-toggle {
+        display: flex;
+    }
+    
+    /* Hide mouse area on mobile since we're using the toggle */
+    .mouse-area {
+        display: none;
+    }
+    
+    /* Adjust controls positioning for mobile */
+    .controls {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: calc(100vw - 20px);
+        font-size: 14px;
+    }
+    
+    .controls h3 {
+        font-size: 18px;
+    }
+    
+    .controls p {
+        font-size: 16px;
+    }
+}

@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# If the request is for a file that exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# If the request is for a directory that exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route room URLs to index.php with room parameter
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ index.php?room=$1 [L,QSA]
+
+# Route root to index.php without room parameter
+RewriteRule ^$ index.php [L]
