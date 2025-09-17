@@ -219,7 +219,7 @@ navigator.mediaDevices.getUserMedia({
         roomIdElement.textContent = roomId;
 
         try {
-            ws = new EventSource('serverGet.php?unique='+unique+'&room='+encodeURIComponent(roomId));
+            ws = new EventSource('server.php?unique='+unique+'&room='+encodeURIComponent(roomId));
         } catch(e) {
             console.error("Could not create eventSource ",e);
         }
@@ -237,7 +237,7 @@ navigator.mediaDevices.getUserMedia({
 				   console.log("Error sending to server with message: " +message);
 				 }
 			 };
-				 xhttp.open('POST', 'serverPost.php?unique='+unique+'&room='+encodeURIComponent(roomId), true);
+				 xhttp.open('POST', 'server.php?unique='+unique+'&room='+encodeURIComponent(roomId), true);
 			 xhttp.setRequestHeader("Content-Type","Application/X-Www-Form-Urlencoded");
 			 xhttp.send(message);
 		}
